@@ -1,0 +1,162 @@
+{
+  "info": {
+    "name": "Disaster Alert API",
+    "description": "Major APIs for Disaster Alert backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Get health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["var j = pm.response.json(); if (j.token) pm.collectionVariables.set('token', j.token);"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        { "name": "Get me", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/users/me" } },
+        { "name": "Update me", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\"\n}" }, "url": "{{baseUrl}}/api/users/me" } }
+      ]
+    },
+    {
+      "name": "Trainings",
+      "item": [
+        { "name": "List trainings", "request": { "method": "GET", "url": "{{baseUrl}}/api/trainings" } },
+        { "name": "Get training by id", "request": { "method": "GET", "url": "{{baseUrl}}/api/trainings/:id" } },
+        { "name": "List lessons", "request": { "method": "GET", "url": "{{baseUrl}}/api/trainings/:trainingId/lessons" } },
+        { "name": "Get lesson", "request": { "method": "GET", "url": "{{baseUrl}}/api/trainings/lessons/:id" } }
+      ]
+    },
+    {
+      "name": "User progress",
+      "item": [
+        { "name": "Get my progress", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/user-progress" } },
+        { "name": "Update progress", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"completedLessons\": 1\n}" }, "url": "{{baseUrl}}/api/user-progress/:trainingId" } }
+      ]
+    },
+    {
+      "name": "Assessments",
+      "item": [
+        { "name": "Get by training", "request": { "method": "GET", "url": "{{baseUrl}}/api/assessments/training/:trainingId" } },
+        { "name": "Submit assessment", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"questionId\": \"\", \"choiceId\": \"\" }\n  ]\n}" }, "url": "{{baseUrl}}/api/assessments/:assessmentId/submit" } },
+        { "name": "My results", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/assessments/my/results" } }
+      ]
+    },
+    {
+      "name": "Certificates",
+      "item": [
+        { "name": "List my certificates", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/certificates" } },
+        { "name": "Issue certificate", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/certificates/:trainingId/issue" } }
+      ]
+    },
+    {
+      "name": "Announcements",
+      "item": [
+        { "name": "List announcements", "request": { "method": "GET", "url": "{{baseUrl}}/api/announcements" } },
+        { "name": "Get by id", "request": { "method": "GET", "url": "{{baseUrl}}/api/announcements/:id" } }
+      ]
+    },
+    {
+      "name": "Risk layers",
+      "item": [
+        { "name": "List risk layers", "request": { "method": "GET", "url": "{{baseUrl}}/api/risk-layers?type=FLOOD" } },
+        { "name": "Get by id", "request": { "method": "GET", "url": "{{baseUrl}}/api/risk-layers/:id" } }
+      ]
+    },
+    {
+      "name": "Evacuation centers",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "url": "{{baseUrl}}/api/evacuation-centers" } },
+        { "name": "Near", "request": { "method": "GET", "url": "{{baseUrl}}/api/evacuation-centers/near?lat=14.5995&lng=120.9842&radius=50" } },
+        { "name": "Get by id", "request": { "method": "GET", "url": "{{baseUrl}}/api/evacuation-centers/:id" } }
+      ]
+    },
+    {
+      "name": "Evacuation",
+      "item": [
+        { "name": "Simulate", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"lat\": 14.5995,\n  \"lng\": 120.9842\n}" }, "url": "{{baseUrl}}/api/evacuation/simulate" } }
+      ]
+    },
+    {
+      "name": "Gamification",
+      "item": [
+        { "name": "Get me", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/gamification/me" } }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "item": [
+        { "name": "List alerts", "request": { "method": "GET", "url": "{{baseUrl}}/api/alerts?type=&severity=" } },
+        { "name": "Get by id", "request": { "method": "GET", "url": "{{baseUrl}}/api/alerts/:id" } }
+      ]
+    },
+    {
+      "name": "Sync (offline)",
+      "item": [
+        { "name": "Queue progress", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"kind\": \"PROGRESS\",\n  \"payload\": { \"trainingId\": \"\", \"completedLessons\": 1 }\n}" }, "url": "{{baseUrl}}/api/sync/queue" } },
+        { "name": "Queue result", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"kind\": \"RESULT\",\n  \"payload\": { \"assessmentId\": \"\", \"answers\": [] }\n}" }, "url": "{{baseUrl}}/api/sync/queue" } },
+        { "name": "Flush", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/sync/flush" } }
+      ]
+    },
+    {
+      "name": "FAQs",
+      "item": [
+        { "name": "List FAQs", "request": { "method": "GET", "url": "{{baseUrl}}/api/faqs" } }
+      ]
+    },
+    {
+      "name": "Contact messages",
+      "item": [
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"John\",\n  \"email\": \"john@example.com\",\n  \"message\": \"Hello\"\n}" }, "url": "{{baseUrl}}/api/contact-messages" } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agency {
+  id        String    @id @default(cuid())
+  name      String
+  code      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  users     User[]
+  trainings Training[]
+}
+
+model User {
+  id              String           @id @default(cuid())
+  name            String
+  email           String           @unique
+  passwordHash    String
+  role            Role             @default(USER)
+  agencyId        String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  agency          Agency?         @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  userProgress    UserProgress[]
+  results         Result[]
+  certificates    Certificate[]
+  contactMessages ContactMessage[]
+  userXP          UserXP?
+  userBadges      UserBadge[]
+  offlineSyncQueue OfflineSyncQueue[]
+}
+
+model Training {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  disasterType String
+  difficulty   String
+  agencyId     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  agency       Agency?      @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  lessons      Lesson[]
+  assessment   Assessment?
+  userProgress UserProgress[]
+  certificates Certificate[]
+}
+
+model Lesson {
+  id         String   @id @default(cuid())
+  trainingId String
+  order      Int
+  title      String
+  content    String?  // or contentUrl if you prefer; can add contentUrl later
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  training   Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+}
+
+model UserProgress {
+  id               String         @id @default(cuid())
+  userId           String
+  trainingId       String
+  progressPercent  Int            @default(0)
+  completedLessons Int            @default(0)
+  status           ProgressStatus @default(IN_PROGRESS)
+  updatedAt        DateTime      @updatedAt
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  training         Training      @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trainingId])
+}
+
+model Assessment {
+  id            String    @id @default(cuid())
+  trainingId    String    @unique
+  title         String?
+  passingScore  Int       // 0-100
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  training      Training  @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  questions     Question[]
+  results       Result[]
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  assessmentId String
+  order        Int
+  text         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  choices      Choice[]
+}
+
+model Choice {
+  id         String   @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean
+  order      Int      @default(0)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Result {
+  id           String    @id @default(cuid())
+  userId       String
+  assessmentId String
+  score        Int       // 0-100
+  passed       Boolean
+  takenAt      DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id             String   @id @default(cuid())
+  userId         String
+  trainingId     String
+  certificateUrl String
+  issuedAt       DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  training       Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trainingId])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model RiskLayer {
+  id        String   @id @default(cuid())
+  type      RiskLayerType
+  name      String?
+  geojson   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  AGENCY
+}
+
+enum ProgressStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum RiskLayerType {
+  FLOOD
+  LANDSLIDE
+  EVAC_ROUTE
+}
+
+model EvacuationCenter {
+  id        String   @id @default(cuid())
+  name      String
+  barangay  String
+  city      String
+  province  String
+  capacity  Int
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserXP {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  xp         Int      @default(0)
+  level      Int      @default(1)
+  streakDays Int      @default(0)
+  lastActive DateTime? @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  description String?
+  xpRequired  Int          @default(0)
+  iconUrl     String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model DisasterAlert {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  type        String
+  severity    String
+  source      String?
+  publishedAt DateTime  @default(now())
+  dedupeHash  String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model OfflineSyncQueue {
+  id          String     @id @default(cuid())
+  userId      String
+  kind        SyncKind
+  payload     Json
+  status      SyncStatus @default(PENDING)
+  error       String?
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SyncKind {
+  PROGRESS
+  RESULT
+}
+
+enum SyncStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
