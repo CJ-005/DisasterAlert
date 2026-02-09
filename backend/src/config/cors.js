@@ -1,22 +1,14 @@
-const cors = require('cors');
-
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
-  : [];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:3000"];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (allowedOrigins.length === 0) {
-      return callback(null, true);
-    }
     if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
     }
-    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-module.exports = cors(corsOptions);
+module.exports = corsOptions;

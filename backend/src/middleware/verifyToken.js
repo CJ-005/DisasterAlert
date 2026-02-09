@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
-const { prisma } = require('../lib/prisma');
-const { AppError } = require('../utils/AppError');
+import jwt from 'jsonwebtoken'; //
+import { prisma } from '../lib/prisma.js'; // Added .js extension
+import { AppError } from '../utils/AppError.js'; // Added .js extension
 
-async function verifyToken(req, res, next) {
+export async function verifyToken(req, res, next) { //
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -16,12 +16,14 @@ async function verifyToken(req, res, next) {
       where: { id: decoded.userId },
       include: { agency: true },
     });
+    
     if (!user) {
       return next(new AppError('User not found', 401));
     }
     if (!user.isActive) {
       return next(new AppError('Account is deactivated', 401));
     }
+    
     req.user = user;
     next();
   } catch (err) {
@@ -31,5 +33,3 @@ async function verifyToken(req, res, next) {
     next(err);
   }
 }
-
-module.exports = { verifyToken };

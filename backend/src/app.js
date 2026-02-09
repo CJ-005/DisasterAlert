@@ -1,61 +1,46 @@
-require('dotenv').config();
-const express = require('express');
-const helmet = require('helmet');
-const morgan = require('morgan');
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
 
-const corsOptions = require('./config/cors');
-const { notFoundHandler } = require('./middleware/notFound');
-const { globalErrorHandler } = require('./middleware/errorHandler');
-const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
+// Config and Middleware (Note the .js extensions)
+import corsOptions from './config/cors.js';
+import { notFoundHandler } from './middleware/notFound.js';
+import { globalErrorHandler } from './middleware/errorHandler.js';
 
-const healthRoutes = require('./routes/health');
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const trainingsRoutes = require('./routes/trainings');
-const userProgressRoutes = require('./routes/userProgress');
-const assessmentsRoutes = require('./routes/assessments');
-const certificatesRoutes = require('./routes/certificates');
-const announcementsRoutes = require('./routes/announcements');
-const faqsRoutes = require('./routes/faqs');
-const contactMessagesRoutes = require('./routes/contactMessages');
-const riskLayersRoutes = require('./routes/riskLayers');
-const evacuationCentersRoutes = require('./routes/evacuationCenters');
-const evacuationRoutes = require('./routes/evacuation');
-const gamificationRoutes = require('./routes/gamification');
-const alertsRoutes = require('./routes/alerts');
-const syncRoutes = require('./routes/sync');
+// Route Imports (Note the .js extensions)
+import healthRoutes from './routes/health.js';
+import authRoutes from './routes/auth.js';
+import announcementsRoutes from './routes/announcements.js';
+import alertsRoutes from './routes/alerts.js';
+import faqsRoutes from './routes/faqs.js';
+import riskLayersRoutes from './routes/riskLayers.js';
+import contactMessagesRoutes from './routes/contactMessages.js';
+import certificatesRoutes from './routes/certificates.js';
+import figmaRoutes from './routes/figma.js';
 
 const app = express();
 
-app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production',
-  crossOriginEmbedderPolicy: false,
-}));
-app.use(corsOptions);
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
-app.use(express.json({ limit: process.env.BODY_LIMIT || '256kb' }));
+// --- Middleware ---
+app.use(helmet());
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(morgan('dev'));
 
-app.use('/api', apiLimiter);
-app.use('/api/auth/login', authLimiter);
-
+// --- API Routes ---
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/trainings', trainingsRoutes);
-app.use('/api/user-progress', userProgressRoutes);
-app.use('/api/assessments', assessmentsRoutes);
-app.use('/api/certificates', certificatesRoutes);
 app.use('/api/announcements', announcementsRoutes);
-app.use('/api/faqs', faqsRoutes);
-app.use('/api/contact-messages', contactMessagesRoutes);
-app.use('/api/risk-layers', riskLayersRoutes);
-app.use('/api/evacuation-centers', evacuationCentersRoutes);
-app.use('/api/evacuation', evacuationRoutes);
-app.use('/api/gamification', gamificationRoutes);
 app.use('/api/alerts', alertsRoutes);
-app.use('/api/sync', syncRoutes);
+app.use('/api/faqs', faqsRoutes);
+app.use('/api/risk-layers', riskLayersRoutes);
+app.use('/api/contact-messages', contactMessagesRoutes);
+app.use('/api/certificates', certificatesRoutes);
+app.use('/api/figma', figmaRoutes);
 
+// --- Error Handling ---
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
-module.exports = app;
+export default app; // Replaces module.exports = app;

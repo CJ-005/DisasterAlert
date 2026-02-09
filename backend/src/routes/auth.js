@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const authController = require('../controllers/authController');
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/login', (req, res) => {
+  res.json({ message: "Login endpoint ready" });
+});
 
-module.exports = router;
+export default router;

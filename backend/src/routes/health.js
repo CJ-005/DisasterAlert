@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const healthController = require('../controllers/healthController');
 
-router.get('/', healthController.getHealth);
+router.get('/', (req, res) => {
+  res.json({ status: "UP", message: "Server is healthy" });
+});
 
-module.exports = router;
+export default router; //
